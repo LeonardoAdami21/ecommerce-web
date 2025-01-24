@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useUserStore } from "../store/useUserStore";
+import toast from "react-hot-toast";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +12,10 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    login(email, password);
+    if (!email || !password) return;
+    if(!email.includes("@")) return toast.error("Invalid email");
+    if(password.length < 6) return toast.error("Password must be at least 6 characters");
+    login({ email, password });
   };
 
   return (
