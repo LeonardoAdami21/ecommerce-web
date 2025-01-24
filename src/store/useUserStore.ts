@@ -2,6 +2,7 @@ import { create } from "zustand";
 import axiosInstance from "../config/axios.config";
 import { toast } from "react-hot-toast";
 import { RegisterUserDto } from "./dto/RegisterUser.dto";
+import { LoginUserDto } from "./dto/LoginUser.dto";
 
 interface User {
   name: string;
@@ -15,8 +16,8 @@ interface UserState {
   loading: boolean;
   checkingAuth: boolean;
   signup: (dto: RegisterUserDto) => Promise<any>;
-  login: (email: string, password: string) => Promise<any>;
-  logout: () => void;
+  login: (dto: LoginUserDto) => Promise<any>;
+  logout: () => Promise<any>;
   checkAuth: () => Promise<any>;
 }
 
@@ -43,13 +44,12 @@ export const useUserStore = create<UserState>((set, get) => ({
         password,
       });
       set({ loading: false, user: response.data });
-      return response.data;
     } catch (error: any) {
       toast.error(error.response.data.message);
     }
   },
 
-  login: async (email: string, password: string) => {
+  login: async ({ email, password }: LoginUserDto) => {
     set({ loading: true });
     try {
       const response = await axiosInstance.post("/auth/login", {
@@ -57,7 +57,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         password,
       });
       set({ loading: false, user: response.data });
-      return response.data;
     } catch (error: any) {
       toast.error(error.response.data.message);
     }
@@ -77,6 +76,19 @@ export const useUserStore = create<UserState>((set, get) => ({
       await axiosInstance.post("/auth/logout");
       set({ user: null });
     } catch (error: any) {
+      toast.error(error.response.data.message);
+    }
+  },
+  refreshToken: async () => {
+    if (get().checkingAuth) return;
+    set({ checkingAuth: true });
+
+    try {
+      const response = await axiosInstance.post("/auth/refresh-token");
+      set({ checkingAuth: false });
+      return response.data;
+    } catch (error: any) {
+      set({ checkingAuth: false, user: null });
       toast.error(error.response.data.message);
     }
   },
