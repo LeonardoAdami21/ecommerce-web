@@ -7,6 +7,7 @@ import NavBar from "./components/NavBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "./store/useUserStore";
 import LoadingSpinner from "./components/LoadingSpinner";
+import AdminPage from "./pages/AdminPage";
 
 const App: React.FC = () => {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -35,6 +36,16 @@ const App: React.FC = () => {
           <Route
             path="/auth/register"
             element={!user ? <RegisterPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/secret-dashboard"
+            element={
+              user?.role === "admin" ? (
+                <AdminPage />
+              ) : (
+                <Navigate to="/auth/login" />
+              )
+            }
           />
         </Routes>
       </div>
