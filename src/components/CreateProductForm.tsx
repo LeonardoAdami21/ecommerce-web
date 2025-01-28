@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
-import { Upload } from "lucide-react";
+import { Loader, PlusCircle, Upload } from "lucide-react";
 import { useState } from "react";
+import { useProductStore } from "../store/useProductStore";
+import toast from "react-hot-toast";
 
 const categories = [
-  "Jean",
+  "Jeans",
   "T-Shirt",
   "Shoes",
   "Glasses",
-  "Jacket",
-  "Suit",
-  "Bag",
+  "Jackets",
+  "Suits",
+  "Bags",
 ];
 
 const CreateProductForm: React.FC = () => {
@@ -20,6 +22,7 @@ const CreateProductForm: React.FC = () => {
     category: "",
     image: "",
   });
+  const { createProduct, loading } = useProductStore();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,10 +35,20 @@ const CreateProductForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(newProduct);
-    // Handle product creation logic here
+    try {
+      await createProduct(newProduct);
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        image: "",
+      });
+    } catch (error) {
+      return toast.error("Failed to create product");
+    }
   };
   return (
     <motion.div
@@ -158,6 +171,28 @@ const CreateProductForm: React.FC = () => {
             <span className="ml-3 text-sm text-gray-400">Image uploaded </span>
           )}
         </div>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md 
+					shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 
+					focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader
+                className="mr-2 h-5 w-5 animate-spin"
+                aria-hidden="true"
+              />
+              Loading...
+            </>
+          ) : (
+            <>
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Create Product
+            </>
+          )}
+        </button>
       </form>
     </motion.div>
   );
