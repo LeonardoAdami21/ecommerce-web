@@ -12,11 +12,11 @@ const RegisterPage: React.FC = () => {
     confirmPassword: "",
   });
 
-  const { signup, loading } = useUserStore();
+  const { register, loading } = useUserStore();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    signup(formData);
+    register(formData);
   };
 
   return (
