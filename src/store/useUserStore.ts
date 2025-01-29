@@ -50,8 +50,6 @@ export const useUserStore = create<UserProps>((set, get) => ({
         refreshToken: response.data.refresh_token,
         loading: false,
       });
-      localStorage.setItem("accessToken", response.data.access_token);
-      localStorage.setItem("refreshToken", response.data.refresh_token);
       toast.success("Login successfully");
     } catch (error) {
       set({ loading: false });
@@ -65,11 +63,11 @@ export const useUserStore = create<UserProps>((set, get) => ({
     confirmPassword,
   }: RegisterUserDto) => {
     set({ loading: true });
+    if (password !== confirmPassword) {
+      set({ loading: false });
+      return toast.error("Passwords do not match");
+    }
     try {
-      if (password !== confirmPassword) {
-        set({ loading: false });
-        return;
-      }
       const response = await axiosInstance.post("/auth/register", {
         name,
         email,
@@ -81,9 +79,8 @@ export const useUserStore = create<UserProps>((set, get) => ({
         refreshToken: response.data.refresh_token,
         loading: false,
       });
-      localStorage.setItem("accessToken", response.data.access_token);
-      localStorage.setItem("refreshToken", response.data.refresh_token);
-      return response.data;
+
+      toast.success("Register successfully");
     } catch (error) {
       set({ loading: false });
       toast.error("Failed to register");
@@ -113,10 +110,8 @@ export const useUserStore = create<UserProps>((set, get) => ({
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      toast.success("Logout successfully");
       set({ user: null, acessToken: null, refreshToken: null });
+      toast.success("Logout successfully");
     } catch (error: any) {
       toast.error(error?.response?.data.error || "Failed to logout");
     }
