@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Loader, PlusCircle, Upload } from "lucide-react";
+import { Loader, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useProductStore } from "../store/useProductStore";
 import toast from "react-hot-toast";
@@ -15,39 +15,53 @@ const categories = [
 ];
 
 const CreateProductForm: React.FC = () => {
-  const [newProduct, setNewProduct] = useState({
+  const { createProduct, loading } = useProductStore();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
-    category: "",
-    image: "",
+    category: categories[0],
+    file: null as File | null,
   });
-  const { createProduct, loading } = useProductStore();
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewProduct({ ...newProduct, image: reader.result as string });
+        setFormData({ ...formData, file: reader.result as null });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createProduct(newProduct);
-      setNewProduct({
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("description", formData.description);
+      data.append("price", formData.price);
+      data.append("category", formData.category);
+      if (formData.file) data.append("file", formData.file);
+      await createProduct(data);
+      setFormData({
         name: "",
         description: "",
         price: "",
-        category: "",
-        image: "",
+        category: categories[0],
+        file: null,
       });
     } catch (error) {
-      return toast.error("Failed to create product");
+      toast.error("Failed to create product");
     }
   };
   return (
@@ -60,7 +74,7 @@ const CreateProductForm: React.FC = () => {
       <h2 className="text-2xl font-bold mb-6 text-emerald-300">
         Create a new product
       </h2>
-      <form action="" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="name"
@@ -72,10 +86,8 @@ const CreateProductForm: React.FC = () => {
             type="text"
             name="name"
             id="name"
-            value={newProduct.name}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, name: e.target.value })
-            }
+            value={formData.name}
+            onChange={handleChange}
             className="mt-1 block w-full rounded-md border py-2 px-3 bg-gray-700 border-gray-600 shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
             required
           />
@@ -90,10 +102,8 @@ const CreateProductForm: React.FC = () => {
           <textarea
             id="description"
             name="description"
-            value={newProduct.description}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, description: e.target.value })
-            }
+            value={formData.description}
+            onChange={handleChange}
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
 						 py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 
 						 focus:border-emerald-500"
@@ -112,10 +122,8 @@ const CreateProductForm: React.FC = () => {
             type="number"
             id="price"
             name="price"
-            value={newProduct.price}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, price: e.target.value })
-            }
+            value={formData.price}
+            onChange={handleChange}
             step="0.01"
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm 
 						py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -134,10 +142,8 @@ const CreateProductForm: React.FC = () => {
           <select
             id="category"
             name="category"
-            value={newProduct.category}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, category: e.target.value })
-            }
+            value={formData.category}
+            onChange={handleChange}
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md
 						 shadow-sm py-2 px-3 text-white focus:outline-none 
 						 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -152,25 +158,24 @@ const CreateProductForm: React.FC = () => {
           </select>
         </div>
 
-        <div className="mt-1 flex items-center">
-          <input
-            type="file"
-            id="image"
-            className="sr-only"
-            accept="image/*"
-            onChange={handleImageChange}
+        {/* Upload da imagem */}
+        <input
+          type="file"
+          id="file"
+          name="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="border p-2 w-full"
+        />
+
+        {/* Exibir a prévia da imagem */}
+        {imagePreview && (
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="w-32 h-32 object-cover mt-2 sr-only"
           />
-          <label
-            htmlFor="image"
-            className="cursor-pointer bg-gray-700 py-2 px-3 border border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-          >
-            <Upload className="h-5 w-5 inline-block mr-2" />
-            Upload Image
-          </label>
-          {newProduct.image && (
-            <span className="ml-3 text-sm text-gray-400">Image uploaded </span>
-          )}
-        </div>
+        )}
         <button
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md 
