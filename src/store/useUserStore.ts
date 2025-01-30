@@ -1,61 +1,40 @@
-import { create } from "zustand";
-import { LoginUserDto } from "./dto/auth/LoginUser.dto";
-import { RegisterUserDto } from "./dto/auth/RegisterUser.dto";
 import axiosInstance from "../config/axios.config";
-import toast from "react-hot-toast";
-
-export enum UserRole {
-  USER = "user",
-  ADMIN = "admin",
-}
+import { create } from "zustand";
+import { toast } from "react-hot-toast";
+import { RegisterUserDto } from "./dto/auth/RegisterUser.dto";
+import { LoginUserDto } from "./dto/auth/LoginUser.dto";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: UserRole.USER | UserRole.ADMIN;
+  password: string;
+  confirmPassword: string;
+  role: "user" | "admin";
 }
 
 interface UserProps {
-  user: User | any;
-  login: (user: any) => void;
-  register: (user: any) => void;
-  logout: () => void;
-  checkAuth: () => void;
-  getrefreshToken: () => void;
+  user: User | null;
   loading: boolean;
   checkingAuth: boolean;
-  acessToken: string | null;
+  accessToken: string | null;
   refreshToken: string | null;
+  register: (dto: RegisterUserDto) => void;
+  login: (dto: LoginUserDto) => void;
+  logout: () => void;
+  checkAuth: () => void;
+  getRefreshToken: () => void;
 }
 
 export const useUserStore = create<UserProps>((set, get) => ({
   user: null,
   loading: false,
   checkingAuth: true,
-  acessToken: null,
-  refreshToken: null,
+  error: null,
   refreshPromise: null,
+  accessToken: null,
+  refreshToken: null,
 
-  login: async ({ email, password }: LoginUserDto) => {
-    set({ loading: true });
-    try {
-      const response = await axiosInstance.post("/auth/login", {
-        email: email,
-        password: password,
-      });
-      set({
-        user: response.data,
-        acessToken: response.data.access_token,
-        refreshToken: response.data.refresh_token,
-        loading: false,
-      });
-      toast.success("Login successfully");
-    } catch (error) {
-      set({ loading: false });
-      toast.error("Failed to login");
-    }
-  },
   register: async ({
     name,
     email,
@@ -63,106 +42,92 @@ export const useUserStore = create<UserProps>((set, get) => ({
     confirmPassword,
   }: RegisterUserDto) => {
     set({ loading: true });
+
     if (password !== confirmPassword) {
       set({ loading: false });
       return toast.error("Passwords do not match");
     }
+
     try {
-      const response = await axiosInstance.post("/auth/register", {
+      const res = await axiosInstance.post("/auth/register", {
         name,
         email,
         password,
       });
+
+      set({ user: res.data, loading: false });
+    } catch (error: any) {
+      set({ loading: false });
+      toast.error(error.response.data.message || "An error occurred");
+    }
+  },
+  login: async ({ email, password }: LoginUserDto) => {
+    set({ loading: true });
+
+    try {
+      const res = await axiosInstance.post("/auth/login", { email, password });
+
       set({
-        user: response.data,
-        acessToken: response.data.access_token,
-        refreshToken: response.data.refresh_token,
+        user: res.data.data, // Pega apenas os dados do usuário
+        accessToken: res.data.access_token, // Salva o access token
+        refreshToken: res.data.refresh_token, // Salva o refresh token
         loading: false,
       });
-
-      toast.success("Register successfully");
-    } catch (error) {
-      set({ loading: false });
-      toast.error("Failed to register");
-    }
-  },
-  checkAuth: async () => {
-    set({ checkingAuth: true });
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        toast.error("Access token not found");
-      }
-      const response = await axiosInstance.get("/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      set({
-        user: response.data,
-        checkingAuth: false,
-      });
+      toast.success("Login successfully");
     } catch (error: any) {
-      console.log(error);
-      set({ checkingAuth: false, user: null });
+      set({ loading: false });
+      toast.error(error.response.data.message || "An error occurred");
     }
   },
+
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
-      set({ user: null, acessToken: null, refreshToken: null });
-      toast.success("Logout successfully");
+      set({ user: null });
     } catch (error: any) {
-      toast.error(error?.response?.data.error || "Failed to logout");
+      toast.error(
+        error.response?.data?.message || "An error occurred during logout",
+      );
     }
   },
-  getrefreshToken: async () => {
+
+  checkAuth: async () => {
+    set({ checkingAuth: true });
     try {
-      if (get().refreshToken) {
-        const response = await axiosInstance.post("/auth/refresh", {
-          refresh_token: get().refreshToken,
-        });
-        set({
-          acessToken: response.data.access_token,
-          refreshToken: response.data.refresh_token,
-        });
-        localStorage.setItem("accessToken", response.data.access_token);
-        localStorage.setItem("refreshToken", response.data.refresh_token);
+      const token = get().accessToken;
+      if (!token) {
+        console.error("Token not found");
       }
+      const response = await axiosInstance.get("/auth/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      set({ user: response.data, checkingAuth: false });
+    } catch (error: any) {
+      console.log(error.message);
+      set({ checkingAuth: false, user: null });
+    }
+  },
+
+  getRefreshToken: async () => {
+    // Prevent multiple simultaneous refresh attempts
+    if (get().checkingAuth) return;
+
+    set({ checkingAuth: true });
+    try {
+      const response = await axiosInstance.post("/auth/refresh-token", {
+        refresh_token: get().refreshToken,
+      });
+      set({
+        accessToken: response.data.access_token, // Salva o novo access token
+        refreshToken: response.data.refresh_token, // Atualiza o refresh token
+        checkingAuth: false,
+      });
+      return response.data;
     } catch (error) {
-      toast.error("Failed to refresh token");
+      set({ user: null, checkingAuth: false });
+      throw error;
     }
   },
 }));
-
-let refreshPromise: any = null;
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // If a refresh is already in progress, wait for it to complete
-        if (refreshPromise) {
-          await refreshPromise;
-          return axiosInstance(originalRequest);
-        }
-
-        // Start a new refresh process
-        refreshPromise = useUserStore.getState().getrefreshToken();
-        await refreshPromise;
-        refreshPromise = null;
-
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, redirect to login or handle as needed
-        useUserStore.getState().logout();
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  },
-);
