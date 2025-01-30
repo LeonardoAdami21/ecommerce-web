@@ -3,5 +3,5 @@ export interface CreateProductDto {
   description: string;
   price: string;
   category: string;
-  image: string;
+  file: File | null;
 }
