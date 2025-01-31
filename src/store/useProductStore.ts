@@ -3,28 +3,33 @@ import axiosInstance from "../config/axios.config";
 import toast from "react-hot-toast";
 
 interface ProductProps {
-  products: Products | [];
+  products: [Products] | [];
   fetchFeaturedProducts: () => void;
   setProducts: (products: any) => void;
   findAllProducts: () => void;
-  createProduct: (dto: FormData) => void;
+  createProduct: (formData: FormData) => void;
+  deleteProduct: (id: string) => void;
+  toggleFeaturedProduct: (id: string) => void;
+  isLoading: boolean;
   loading: boolean;
 }
 
 interface Products {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   price: string;
   category: string;
-  file: File | null;
+  file: string
   quantity: number;
+  isloading: boolean;
   isFeatured: boolean;
 }
 
-export const useProductStore = create<ProductProps>((set: any, get) => ({
+export const useProductStore = create<ProductProps>((set: any) => ({
   products: [],
   loading: false,
+  isLoading: false,
 
   setProducts: async (products) => set({ products }),
   fetchAllProducts: async () => {
@@ -35,20 +40,17 @@ export const useProductStore = create<ProductProps>((set: any, get) => ({
       console.error("Error fetching products:", error);
     }
   },
-  createProduct: async (dto: FormData) => {
+  createProduct: async (formData: FormData) => {
     set({ isLoading: true });
     try {
-      const response = await axiosInstance.post("/products", dto, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      set((prevState: any) => ({
-        products: [...prevState.products, response.data],
+      const response = await axiosInstance.post("/products", formData);
+      set((state: any) => ({
+        products: [...state.products, response.data],
         isLoading: false,
       }));
     } catch (error) {
       toast.error("Failed to create product");
+      set({ isLoading: false });
     }
   },
   fetchFeaturedProducts: async () => {
@@ -65,6 +67,43 @@ export const useProductStore = create<ProductProps>((set: any, get) => ({
       set({ products: response.data });
     } catch (error) {
       console.error("Error fetching all products:", error);
+    }
+  },
+  deleteProduct: async (id) => {
+    set({ loading: true });
+    try {
+      const products = await axiosInstance.get(`/products/${id}`);
+      if (!products) {
+        toast.error("Product not found");
+        return;
+      }
+      await axiosInstance.delete(`/products/${id}`);
+      set((prevProducts: any) => ({
+        products: prevProducts.products.filter(
+          (product: any) => product._id !== id,
+        ),
+        loading: false,
+      }));
+      toast.success("Product deleted successfully");
+    } catch (error: any) {
+      set({ loading: false });
+      toast.error(error.response.data.error || "Failed to delete product");
+    }
+  },
+  toggleFeaturedProduct: async (id: string) => {
+    try {
+      await axiosInstance.put(`/products/featured/${id}`);
+      set((state: any) => ({
+        products: state.products.map((product: any) => {
+          if (product.id === id) {
+            return { ...product, isFeatured: !product.isFeatured };
+          }
+          return product;
+        }),
+      }));
+      toast.success("Product updated successfully");
+    } catch (error) {
+      console.error("Error updating product:", error);
     }
   },
 }));

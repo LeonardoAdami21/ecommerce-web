@@ -14,11 +14,11 @@ const tabs = [
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("create");
-  const { fetchAllProducts } = useProductStore();
+  const { findAllProducts } = useProductStore();
 
   useEffect(() => {
-    fetchAllProducts();
-  }, [fetchAllProducts]);
+    findAllProducts();
+  }, [findAllProducts]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">

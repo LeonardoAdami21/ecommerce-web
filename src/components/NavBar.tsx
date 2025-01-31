@@ -6,7 +6,6 @@ import { useCartStore } from "../store/useCartStore";
 const NavBar = () => {
   const { user, logout, checkingAuth } = useUserStore();
   const isAdmin = user?.role === "admin";
-  console.log(isAdmin);
   if (checkingAuth) {
     return (
       <header className="fixed top-0 left-0 w-full bg-gray-900 bg-opacity-90 shadow-lg z-40">
