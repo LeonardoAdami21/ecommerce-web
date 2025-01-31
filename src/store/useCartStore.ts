@@ -4,6 +4,13 @@ import axiosInstance from "../config/axios.config";
 
 interface CartProps {
   cart: [];
+  isCouponApplied: boolean;
+  loading: boolean;
+  error: any;
+  total: number;
+  coupon: any;
+  subtotal: number;
+  
   getMyCoupon: () => Promise<void>;
   applyCoupon: (code: string) => Promise<void>;
   removeCoupon: () => void;
@@ -16,7 +23,7 @@ interface CartProps {
 }
 
 interface Cart {
-  coupon: string
+  coupon: string;
   total: number;
   subtotal: number;
   isCouponApplied: boolean;
@@ -28,6 +35,8 @@ export const useCartStore = create<CartProps>((set: any, get: any) => ({
   error: null,
   total: 0,
   coupon: null,
+  subtotal: 0,
+  isCouponApplied: false,
 
   setCart: (cart: Cart) => set({ cart }),
 

@@ -8,6 +8,8 @@ import { Toaster } from "react-hot-toast";
 import { useUserStore } from "./store/useUserStore";
 import LoadingSpinner from "./components/LoadingSpinner";
 import AdminPage from "./pages/AdminPage";
+import CategoryPage from "./pages/CategoryPage";
+import CartPage from "./pages/CartPage";
 
 const App: React.FC = () => {
   const { user, checkAuth, checkingAuth } = useUserStore();
@@ -38,6 +40,11 @@ const App: React.FC = () => {
             element={!user ? <RegisterPage /> : <Navigate to="/" />}
           />
           <Route
+            path="/cart"
+            element={user ? <CartPage /> : <Navigate to="/auth/login" />}
+          />
+
+          <Route
             path="/secret-dashboard"
             element={
               user?.role === "admin" ? (
@@ -47,6 +54,7 @@ const App: React.FC = () => {
               )
             }
           />
+          <Route path="/category/:category" element={<CategoryPage />} />
         </Routes>
       </div>
       <Toaster />

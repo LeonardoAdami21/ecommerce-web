@@ -10,6 +10,7 @@ interface ProductProps {
   createProduct: (formData: FormData) => void;
   deleteProduct: (id: string) => void;
   toggleFeaturedProduct: (id: string) => void;
+  fetchProductsByCategory: (category: any) => Promise<any>
   isLoading: boolean;
   loading: boolean;
 }
@@ -20,7 +21,7 @@ interface Products {
   description: string;
   price: string;
   category: string;
-  file: string
+  file: string;
   quantity: number;
   isloading: boolean;
   isFeatured: boolean;
@@ -51,6 +52,15 @@ export const useProductStore = create<ProductProps>((set: any) => ({
     } catch (error) {
       toast.error("Failed to create product");
       set({ isLoading: false });
+    }
+  },
+  fetchProductsByCategory: async (category: string) => {
+    try {
+      const response = await axiosInstance.get(`/products/${category}`);
+      set({ products: response.data });
+      toast.success("Products fetched successfully");
+    } catch (error) {
+      console.error("Error fetching products by category:", error);
     }
   },
   fetchFeaturedProducts: async () => {
@@ -92,7 +102,7 @@ export const useProductStore = create<ProductProps>((set: any) => ({
   },
   toggleFeaturedProduct: async (id: string) => {
     try {
-      await axiosInstance.put(`/products/featured/${id}`);
+      await axiosInstance.patch(`/products/${id}`);
       set((state: any) => ({
         products: state.products.map((product: any) => {
           if (product.id === id) {
