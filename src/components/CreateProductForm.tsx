@@ -1,33 +1,63 @@
-import { motion } from "framer-motion";
-import { Loader, PlusCircle } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { PlusCircle, Upload, Loader } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
 import toast from "react-hot-toast";
 
 const categories = [
-  "Jeans",
-  "T-Shirt",
-  "Shoes",
-  "Glasses",
-  "Jackets",
-  "Suits",
-  "Bags",
+  "jeans",
+  "t-shirts",
+  "shoes",
+  "glasses",
+  "jackets",
+  "suits",
+  "bags",
 ];
 
-const CreateProductForm: React.FC = () => {
-  const { createProduct, loading } = useProductStore();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+const CreateProductForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
-    category: categories[0],
+    category: "",
     file: null as File | null,
   });
+
+  const { createProduct, loading } = useProductStore();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!formData.file) {
+      return;
+    }
+    try {
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("description", formData.description);
+      data.append("price", formData.price);
+      data.append("category", formData.category);
+      data.append("file", formData.file);
+     
+
+      await createProduct(data);
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        file: null
+      });
+      toast.success("Product created successfully");
+    } catch {
+      console.log("error creating a product");
+    }
+  };
+
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+      | React.ChangeEvent<HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -36,62 +66,47 @@ const CreateProductForm: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, file: reader.result as null });
-      };
-      reader.readAsDataURL(file);
+      if (file) {
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          setFormData({ ...formData, file });
+        };
+      }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const data = new FormData();
-      data.append("name", formData.name);
-      data.append("description", formData.description);
-      data.append("price", formData.price);
-      data.append("category", formData.category);
-      if (formData.file) data.append("file", formData.file);
-      await createProduct(data);
-      setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: categories[0],
-        file: null,
-      });
-    } catch (error) {
-      toast.error("Failed to create product");
-    }
-  };
   return (
     <motion.div
-      className="bg-gray-800 shadow-lg mb-8 p-8 rounded-lg max-w-xl mx-auto"
+      className="bg-gray-800 shadow-lg rounded-lg p-8 mb-8 max-w-xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <h2 className="text-2xl font-bold mb-6 text-emerald-300">
-        Create a new product
+      <h2 className="text-2xl font-semibold mb-6 text-emerald-300">
+        Create New Product
       </h2>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-400"
+            className="block text-sm font-medium text-gray-300"
           >
             Product Name
           </label>
           <input
             type="text"
-            name="name"
             id="name"
+            name="name"
             value={formData.name}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border py-2 px-3 bg-gray-700 border-gray-600 shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2
+						 px-3 text-white focus:outline-none focus:ring-2
+						focus:ring-emerald-500 focus:border-emerald-500"
             required
           />
         </div>
+
         <div>
           <label
             htmlFor="description"
@@ -104,6 +119,7 @@ const CreateProductForm: React.FC = () => {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            rows={3}
             className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm
 						 py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 
 						 focus:border-emerald-500"
@@ -158,24 +174,26 @@ const CreateProductForm: React.FC = () => {
           </select>
         </div>
 
-        {/* Upload da imagem */}
-        <input
-          type="file"
-          id="file"
-          name="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="border p-2 w-full"
-        />
-
-        {/* Exibir a prévia da imagem */}
-        {imagePreview && (
-          <img
-            src={imagePreview}
-            alt="Preview"
-            className="w-32 h-32 object-cover mt-2 sr-only"
+        <div className="mt-1 flex items-center">
+          <input
+            type="file"
+            id="file"
+            className="sr-only"
+            accept="image/*"
+            onChange={handleImageChange}
           />
-        )}
+          <label
+            htmlFor="file"
+            className="cursor-pointer bg-gray-700 py-2 px-3 border border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+          >
+            <Upload className="h-5 w-5 inline-block mr-2" />
+            Upload Image
+          </label>
+          {formData.file && (
+            <span className="ml-3 text-sm text-gray-400">Image uploaded </span>
+          )}
+        </div>
+
         <button
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md 
@@ -202,5 +220,4 @@ const CreateProductForm: React.FC = () => {
     </motion.div>
   );
 };
-
 export default CreateProductForm;
