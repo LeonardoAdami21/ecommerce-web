@@ -39,19 +39,52 @@ const Navbar = () => {
         </div>
         <Link to="/cart" className="relative">
           <img src={assets.cart_icon} className="w-5 min-w-5" alt="" />
-          <p className="absolute right-[-5px]  bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full  ">
+          <p className="absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full">
             10
           </p>
           <img
             src={assets.menu_icon}
             onClick={() => setVisible(!visible)}
-            className="w-5 cursor-pointer"
+            className="w-5 cursor-pointer sm:hidden"
           />
         </Link>
       </div>
       <div
-        className={`absolute top-0 right-0 bottom-0 overflow-hidden  bg-white transition-all ${visible ? "w-full" : "w-0"}`}
-      ></div>
+        className={`absolute top-0 right-0 bottom-0 overflow-hidden bg-white transition-all ${visible ? "w-full" : "w-0"}`}
+      >
+        <div className="flex flex-col text-gray-600 p-5">
+          <img src={assets.dropdown_icon} className="h-4 rotate-180" alt="" />
+          <p>Back</p>
+        </div>
+        <NavLink
+          onClick={() => setVisible(false)}
+          to="*"
+          className="py-2 pl-6 border"
+        >
+          Home
+        </NavLink>
+        <NavLink
+          onClick={() => setVisible(false)}
+          to="/collection"
+          className="py-2 pl-6 border"
+        >
+          Collection
+        </NavLink>
+        <NavLink
+          onClick={() => setVisible(false)}
+          to="/about"
+          className="py-2 pl-6 border"
+        >
+          About
+        </NavLink>
+        <NavLink
+          onClick={() => setVisible(false)}
+          to="/contact"
+          className="py-2 pl-6 border"
+        >
+          Contact
+        </NavLink>
+      </div>
     </div>
   );
 };
