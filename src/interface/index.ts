@@ -10,7 +10,7 @@ export interface Users {
 
 export interface Orders {
   id: number;
-  userId: number;
+  userId?: number;
   status: string;
   total: number;
   created_at: Date;
@@ -18,7 +18,7 @@ export interface Orders {
 
 export interface Product {
   id: number;
-  userId: number;
+  userId?: number;
   name: string;
   category: string;
   description: string;
