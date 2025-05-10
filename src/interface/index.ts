@@ -1,10 +1,10 @@
 // src/types/index.ts
 
 export interface Users {
-  id: number;
-  name: string;
+  id?: number;
+  name?: string;
   email: string;
-  password: string;
+  password?: string;
   roles: string[];
 }
 
