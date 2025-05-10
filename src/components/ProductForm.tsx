@@ -14,6 +14,7 @@ const ProductForm = () => {
     description: "",
     price: 0,
     image: "",
+    quantity_stock: 0
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -82,7 +83,9 @@ const ProductForm = () => {
 
     if (validateForm()) {
       try {
-        await addProduct(formData);
+        await addProduct({
+          ...formData,
+        });
         // Resetar o formulário após sucesso
         setFormData({
           name: "",
@@ -90,6 +93,7 @@ const ProductForm = () => {
           description: "",
           price: 0,
           image: "",
+          quantity_stock: 0
         });
         setIsFormOpen(false);
       } catch (error) {

@@ -12,8 +12,21 @@ export interface Orders {
   id: number;
   userId?: number;
   status: string;
-  total: number;
+  customerName: string;
+  totalAmount: number;
   created_at: Date;
+  updated_at: Date;
+  items: OrderItem[];
+}
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  productName: string;
+  productId: number;
+  unitPrice: number;
+  totalPrice: number;
+  quantity: number;
 }
 
 export interface Product {
@@ -24,7 +37,7 @@ export interface Product {
   description: string;
   price: number;
   image: string;
-  stockQuantity: number;
+  quantity_stock: number;
 }
 
 export interface ProductFilter {
@@ -36,11 +49,13 @@ export interface ProductFilter {
 }
 
 export interface ProductFormData {
+  id?: number;
   name: string;
   category: string;
   description: string;
   price: number;
   image: string;
+  quantity_stock: number;
 }
 
 export interface AuthResponse {
