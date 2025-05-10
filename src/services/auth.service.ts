@@ -1,72 +1,99 @@
 import axiosInstance from "../api/api";
-import type { AuthResponse, Users } from "../interface";
+import type { AuthResponse } from "../interface";
+
+// Constante para chave do token para evitar erros de digitação
+const TOKEN_KEY = "access_token";
 
 export const userLogin = async (
   email: string,
   password: string,
 ): Promise<AuthResponse> => {
   if (!email) {
-    throw new Error("Email is required");
+    throw new Error("Email é obrigatório");
   }
 
-  // Para rotas públicas, pode ser útil usar um axios instance sem interceptors
-  // Ou usar api diretamente, já que o interceptor só adiciona token quando ele existe
-  const response = await axiosInstance.post<AuthResponse>("/auth/login", {
-    email,
-    password,
-  });
+  if (!password) {
+    throw new Error("Senha é obrigatória");
+  }
 
-  // Opcional: salvar o token aqui mesmo
-  if (response.data && response.data.access_token) {
+  try {
+    const response = await axiosInstance.post<AuthResponse>("/auth/login", {
+      email,
+      password,
+    });
+
+    // Verifique se a resposta contém os dados esperados
+    if (!response.data || !response.data.access_token) {
+      throw new Error("Resposta de autenticação inválida");
+    }
+
+    // Salve o token
     saveAuthToken(response.data.access_token);
-  }
 
-  return response.data;
+    return response.data;
+  } catch (error: any) {
+    // Verificar se o erro é da resposta da API
+    if (error.response) {
+      const message = error.response.data?.message || "Falha na autenticação";
+      throw new Error(message);
+    }
+    throw error;
+  }
 };
 
-export const getCurrentUser = async (): Promise<Users> => {
-  // Esta rota precisa do token, então usamos o api com os interceptors
-  const token = localStorage.getItem("token");
+export async function getCurrentUser() {
+  const token = getAuthToken();
+
   if (!token) {
-    throw new Error("Token not found");
+    throw new Error("Token não encontrado");
   }
 
-  const response = await axiosInstance.get<Users>("/users/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const response = await axiosInstance.get("/users/me");
 
-  const userData: Users = {
-    id: response.data.id,
-    email: response.data.email,
-    name: response.data.name,
-    password: response.data.password,
-    roles: response.data.roles,
-  };
-  return userData;
-};
+    if (!response.data) {
+      throw new Error("Dados do usuário não recebidos");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    // Se o erro for 401 (não autorizado), remova o token
+    if (error.response && error.response.status === 401) {
+      removeAuthToken();
+    }
+    throw error;
+  }
+}
 
 export const saveAuthToken = (token: string): void => {
-  localStorage.setItem("access_token", token);
+  if (!token) {
+    console.error("Tentativa de salvar token vazio");
+    return;
+  }
+  localStorage.setItem(TOKEN_KEY, token);
 };
 
 export const getAuthToken = (): string | null => {
-  return localStorage.getItem("access_token");
+  return localStorage.getItem(TOKEN_KEY);
 };
 
 export const removeAuthToken = (): void => {
-  localStorage.removeItem("access_token");
+  localStorage.removeItem(TOKEN_KEY);
 };
 
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
+  const token = getAuthToken();
+
   try {
-    await axiosInstance.post("/auth/logout");
-    localStorage.removeItem("access_token");
-    window.location.href = "/auth/login";
+    // Só tenta fazer logout no servidor se tiver um token
+    if (token) {
+      await axiosInstance.post("/auth/logout");
+    }
   } catch (error) {
-    localStorage.removeItem("access_token");
-    window.location.href = "/auth/login";
+    console.error("Erro ao fazer logout no servidor:", error);
+  } finally {
+    // Sempre limpa o token local independentemente da resposta do servidor
+    removeAuthToken();
   }
 };
 
@@ -75,15 +102,23 @@ export const registerUser = async (
   email: string,
   password: string,
 ) => {
+  if (!name || !email || !password) {
+    throw new Error("Nome, email e senha são obrigatórios");
+  }
+
   try {
     const response = await axiosInstance.post("/auth/register", {
       name,
       email,
       password,
     });
-    return response.data;
-  } catch (error) {
-    throw new Error("Registration failed");
+    return response;
+  } catch (error: any) {
+    if (error.response) {
+      const message = error.response.data?.message || "Falha no registro";
+      throw new Error(message);
+    }
+    throw error;
   }
 };
 

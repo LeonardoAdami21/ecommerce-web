@@ -10,12 +10,11 @@ import {
 } from "../services/auth.service";
 import type { AuthResponse, Users } from "../interface";
 
-
 interface AuthContextData {
   user: Users | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<AuthResponse>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<any>;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string | string[]) => boolean;
@@ -28,36 +27,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getAuthToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
+  // Carrega o usuário inicialmente se houver um token
   useEffect(() => {
     const loadUser = async () => {
       const token = getAuthToken();
-      if (token) {
-        try {
-          const userData = await getCurrentUser();
-          console.log("User data:", userData);
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const userData = await getCurrentUser();
+
+        if (userData && userData.email) {
           setUser({
             email: userData.email,
+            name: userData.name || "Usuário",
             id: userData.id,
-            roles: userData.roles,
+            roles: userData.roles || [],
           });
           setIsAuthenticated(true);
-        } catch (error) {
-          console.log("Failed to load user:", error);
+        } else {
+          console.warn("Dados de usuário incompletos ou inválidos");
           removeAuthToken();
           setIsAuthenticated(false);
-          setUser(null);
         }
+      } catch (error) {
+        console.error("Falha ao carregar usuário:", error);
+        removeAuthToken();
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadUser();
   }, []);
 
-  // Corrigido para chamar o serviço de registro
   const register = async (
     name: string,
     email: string,
@@ -65,49 +76,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   ): Promise<any> => {
     try {
       const response = await registerUser(name, email, password);
-      return response.data;
+      return response;
     } catch (error) {
-      console.log(error);
-      throw new Error("Registration failed");
+      console.error("Falha no registro:", error);
+      throw error;
     }
   };
 
-  // Corrigido para chamar o serviço de login
   const login = async (
     email: string,
     password: string,
   ): Promise<AuthResponse> => {
+    setLoading(true);
+
     try {
-      setLoading(true);
       const response = await userLogin(email, password);
 
-      // Verificar se access_token existe na resposta
-      if (response && response.access_token) {
-        saveAuthToken(response.access_token);
-        setIsAuthenticated(true);
+      // O token já é salvo na função userLogin
 
-        // Se a API não retorna o usuário na resposta de login,
-        // precisamos fazer uma chamada separada para obter os dados do usuário
-        try {
-          const userData = await getCurrentUser();
+      try {
+        const userData = await getCurrentUser();
+
+        if (userData && userData.email) {
           setUser({
             email: userData.email,
+            name: userData.name || "Usuário",
             id: userData.id,
-            roles: userData.roles,
+            roles: userData.roles || [],
           });
-        } catch (userError) {
-          console.log("Failed to get user data after login:", userError);
-          throw new Error("Failed to get user data after login");
+          setIsAuthenticated(true);
+        } else {
+          throw new Error("Dados de usuário incompletos");
         }
-
-        return response;
-      } else {
-        console.log("No access token found in login response:", response);
-        throw new Error("Authentication failed: No token received");
+      } catch (userError) {
+        console.error("Falha ao obter dados do usuário após login:", userError);
+        removeAuthToken();
+        setIsAuthenticated(false);
+        throw new Error("Falha ao obter dados do usuário após login");
       }
+
+      return response;
     } catch (error) {
-      console.log("Login failed:", error);
-      throw new Error("Authentication failed");
+      removeAuthToken();
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -117,44 +130,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     removeAuthToken();
     setUser(null);
     setIsAuthenticated(false);
-    navigate("/");
+    navigate("/auth/login");
   };
 
-  // Função para verificar se o usuário possui determinada role
-  // Função corrigida para verificar se o usuário possui determinada role
-  // Função para verificar se o usuário possui determinada role (com debug adicional)
   const hasRole = (role: string | string[]): boolean => {
-    console.log("hasRole - Checking:", {
-      user,
-      userRoles: user?.roles,
-      requiredRoles: role,
-    });
-
-    // Se não há usuário ou roles não é um array, retorna false
-    if (!user || !user.roles) {
-      console.log("hasRole - No user or roles");
+    if (!user || !user.roles || !isAuthenticated) {
       return false;
     }
 
-    // Garante que roles seja tratado como um array
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
-    console.log("hasRole - User roles:", userRoles);
 
     if (Array.isArray(role)) {
-      const hasPermission = role.some((r) => userRoles.includes(r));
-      console.log("hasRole - Multiple roles check:", {
-        requiredRoles: role,
-        hasPermission,
-      });
-      return hasPermission;
+      return role.some((r) => userRoles.includes(r));
     }
 
-    const hasPermission = userRoles.includes(role);
-    console.log("hasRole - Single role check:", {
-      requiredRole: role,
-      hasPermission,
-    });
-    return hasPermission;
+    return userRoles.includes(role);
   };
 
   return (
@@ -174,12 +164,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
-
+export const useAuth = () => useContext(AuthContext);
 export default AuthContext;

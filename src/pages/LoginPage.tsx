@@ -9,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -17,7 +18,7 @@ const Login = () => {
       navigate("/");
       return res;
     } catch (err) {
-      console.error(err);
+      console.log(err);
       throw new Error("Email ou senha inválidos");
     }
   };
