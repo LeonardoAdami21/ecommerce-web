@@ -1,11 +1,10 @@
 import type { Product } from "../interface";
 import { useEffect, useState } from "react";
-import ProductCard from "../components/ProductCard";
 import axiosInstance from "../api/api";
+import ProductList from "../components/ProductList";
 
 const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -22,18 +21,16 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-center">
-      <h1 className="text-4xl font-bold mb-6">
-        🎮 Bem vindo ao nosso Ecommerce
-      </h1>
-      <p className="mb-8 text-lg text-gray-600">
-        Aqui voce comprar varios produtos com desconto
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-100">
+      <header className="text-center py-12">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
+          Bem-vindo ao nosso E-commerce
+        </h1>
+        <p className="text-gray-600 text-lg">
+          Confira nossos produtos disponíveis
+        </p>
+      </header>
+      <ProductList key={products.length} />
     </div>
   );
 };

@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { useProductStore } from "../store/productStore";
 
 const FilterBar = () => {
-  const { filter, updateFilter, products } = useProductStore();
-
+  const { products } = useProductStore();
+  const { filters, updateFilter } = useProductStore();
   const [localFilter, setLocalFilter] = useState({
-    searchTerm: filter.searchTerm,
-    minPrice: filter.minPrice === null ? "" : filter.minPrice,
-    maxPrice: filter.maxPrice === null ? "" : filter.maxPrice,
+    searchTerm: filters.searchTerm,
+    minPrice: filters.minPrice === null ? "" : filters.minPrice,
+    maxPrice: filters.maxPrice === null ? "" : filters.maxPrice,
   });
 
   // Para encontrar o preço máximo no conjunto de produtos
@@ -82,7 +82,7 @@ const FilterBar = () => {
   };
 
   const getCurrentSortValue = () => {
-    const { sortBy, sortOrder } = filter;
+    const { sortBy, sortOrder } = filters;
     return `${sortBy}-${sortOrder}`;
   };
 
