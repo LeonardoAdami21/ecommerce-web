@@ -6,9 +6,10 @@ import { useProductStore } from "../store/productStore";
 
 interface ProductCardProps {
   product: Product;
+  onClick?: () => void;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, onClick }: ProductCardProps) => {
   const { deleteProduct } = useProductStore();
   const { user } = useAuth();
 
@@ -30,7 +31,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 hover:shadow-lg">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 hover:shadow-lg cursor-pointer">
       <div className="w-full h-48 overflow-hidden">
         <img
           src={product.image}
@@ -65,7 +66,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         <div className="mt-4 flex justify-between items-center">
           <div className="text-sm font-medium text-gray-500">
-            Estoque: {product.stockQuantity}
+            Estoque: {Number(product.quantity_stock)}
           </div>
 
           {isAuthenticated && (

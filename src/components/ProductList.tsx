@@ -1,4 +1,3 @@
-// src/components/ProductList.tsx
 import { useEffect } from "react";
 import { useProductStore } from "../store/productStore";
 import LoadingSpinner from "./LoadingSpinner";
@@ -8,24 +7,18 @@ import Pagination from "./Pagination";
 
 const ProductList = () => {
   const {
-    products,
+    products = [],
     isLoading,
     error,
     fetchProducts,
     currentPage,
-    itemsPerPage,
     totalPages,
     setPage,
   } = useProductStore();
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  // Calcular os produtos que devem ser exibidos na página atual
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = products.slice(startIndex, endIndex);
+    fetchProducts(currentPage);
+  }, [currentPage]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -37,7 +30,7 @@ const ProductList = () => {
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <p>{error}</p>
           <button
-            onClick={() => fetchProducts()}
+            onClick={() => fetchProducts(currentPage)}
             className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
           >
             Tentar novamente
@@ -64,14 +57,14 @@ const ProductList = () => {
         <>
           <div
             data-testid="product-grid"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 mb-6 w-full"
           >
-            {currentProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
