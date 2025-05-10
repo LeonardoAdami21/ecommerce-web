@@ -2,15 +2,7 @@ import axiosInstance from "../api/api";
 import type { Product, ProductFormData } from "../interface";
 
 export const getProducts = async (): Promise<Product[]> => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Token not found");
-  }
-  const response = await axiosInstance.get("/products", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await axiosInstance.get("/products");
   return response.data;
 };
 
@@ -65,7 +57,18 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async (id: number): Promise<void> => {
-  await axiosInstance.delete(`/products/${id}`);
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Token not found");
+  }
+  if (!id) {
+    throw new Error("ID not found");
+  }
+  await axiosInstance.delete(`/products/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 export const mockProductApi = {
