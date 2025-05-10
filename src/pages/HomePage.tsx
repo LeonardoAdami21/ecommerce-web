@@ -29,7 +29,6 @@ const Home = () => {
       <p className="mb-8 text-lg text-gray-600">
         Aqui voce comprar varios produtos com desconto
       </p>
-      <h2>Produtos</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
