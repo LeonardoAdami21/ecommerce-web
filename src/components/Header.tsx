@@ -1,7 +1,7 @@
+import { ShoppingCart } from "lucide-react";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { ShoppingCart } from "lucide-react";
 
 const Header: React.FC = () => {
   const { user, logout, isAuthenticated, loading } = useAuth();
@@ -37,7 +37,7 @@ const Header: React.FC = () => {
                   3
                 </span> */}
               </button>
-
+              
               <span
                 data-testid="user-greeting"
                 className="text-white bg-blue-700 px-3 py-1 rounded"

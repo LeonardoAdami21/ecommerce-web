@@ -1,4 +1,3 @@
-// Exemplo de implementação recomendada para productStore.ts
 import { create } from "zustand";
 import type { Product, ProductFormData } from "../interface";
 import axiosInstance from "../api/api";
@@ -19,13 +18,13 @@ interface ProductState {
     sortBy: "name" | "price" | "category";
     sortOrder: "asc" | "desc";
   };
-  updateFilter: (filters: any) => void;
 
   // Actions
-  fetchProducts: (page?: number, filters?: any) => Promise<void>;
+  fetchProducts: (page?: number) => Promise<void>;
   addProduct: (product: ProductFormData) => Promise<void>;
   setPage: (page: number) => void;
-  setFilter: (filters: any) => void;
+  updateFilter: (newFilters: Partial<ProductState["filters"]>) => void;
+  applyFilters: () => void;
   deleteProduct: (id: number) => Promise<void>;
   updateProduct: (id: number, product: Product) => Promise<void>;
 }
@@ -57,31 +56,75 @@ export const useProductStore = create<ProductState>((set, get) => ({
       console.error("Error adding product:", error);
     }
   },
-  // Dentro do Zustand store
+
+  // Busca produtos do servidor e aplica filtros localmente
   fetchProducts: async (page = 1) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.get(`/products?page=${page}`);
+      // Construir URL com parâmetros de consulta para filtros no servidor
+      const { filters } = get();
+      const params = new URLSearchParams();
+
+      params.append("page", page.toString());
+
+      if (filters.searchTerm) {
+        params.append("search", filters.searchTerm);
+      }
+
+      if (filters.minPrice !== null) {
+        params.append("minPrice", filters.minPrice.toString());
+      }
+
+      if (filters.maxPrice !== null) {
+        params.append("maxPrice", filters.maxPrice.toString());
+      }
+
+      params.append("sortBy", filters.sortBy);
+      params.append("sortOrder", filters.sortOrder);
+
+      const response = await axiosInstance.get(
+        `/products?${params.toString()}`,
+      );
+
       set({
         products: response.data.data || [],
-        totalPages: response.data.totalPages,
-        currentPage: page, // ✅ Está atualizando a página aqui!
+        filteredProducts: response.data.data || [],
+        totalItems: response.data.totalItems || 0,
+        totalPages: response.data.totalPages || 1,
+        currentPage: page,
         isLoading: false,
       });
     } catch (error) {
       set({ error: "Erro ao buscar produtos.", isLoading: false });
+      console.error("Error fetching products:", error);
     }
   },
 
   setPage: (page) => {
     if (page !== get().currentPage) {
-      get().fetchProducts(page, {}); // ❌ Isso está chamando fetchProducts sem atualizar o estado de forma clara
+      get().fetchProducts(page);
     }
   },
 
-  setFilter: (filters) => {
-    // Reseta para a página 1 quando aplicar novos filtros
-    get().fetchProducts(1, filters);
+  // Atualiza os filtros no estado e aplica os filtros
+  updateFilter: (newFilters) => {
+    set((state) => ({
+      filters: {
+        ...state.filters,
+        ...newFilters,
+      },
+    }));
+
+    // Aplica os filtros automaticamente após atualizar o estado
+    setTimeout(() => {
+      get().applyFilters();
+    }, 0);
+  },
+
+  // Função para aplicar os filtros atuais e buscar produtos novamente
+  applyFilters: () => {
+    // Sempre volta para a página 1 quando aplicar novos filtros
+    get().fetchProducts(1);
   },
 
   deleteProduct: async (id) => {
@@ -101,7 +144,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       console.error("Error updating product:", error);
     }
   },
-  updateFilter: (filters) => {
-    set({ filters });
-  },
 }));
+
+export default useProductStore;

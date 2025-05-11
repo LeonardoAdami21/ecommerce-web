@@ -135,7 +135,7 @@ const CreateOrder = () => {
       const orderData: CreateOrderData = {
         status: "Pendente",
         totalAmount: calculateTotal(),
-        items: cart.map((item) => ({
+        products: cart.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
         })),
