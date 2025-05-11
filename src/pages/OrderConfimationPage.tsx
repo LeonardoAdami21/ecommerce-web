@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getOrderById } from "../services/orders.service";
+import { getOrderById, updateOrderStatus } from "../services/orders.service";
 
 interface OrderProduct {
   id: number;
@@ -49,6 +49,20 @@ const OrderConfirmationPage: React.FC = () => {
     );
   }
 
+  // Dentro do componente:
+  const handleCancel = async () => {
+    if (!order) return;
+
+    try {
+      await updateOrderStatus(order.id, "Cancelado");
+      alert("Pedido cancelado.");
+      setOrder({ ...order, status: "Cancelado" });
+    } catch (error) {
+      console.error("Erro ao cancelar pedido:", error);
+      alert("Não foi possível cancelar o pedido.");
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white p-6 rounded-md shadow-md">
@@ -83,6 +97,20 @@ const OrderConfirmationPage: React.FC = () => {
           ))}
         </ul>
 
+        {order.status === "Pendente" && (
+          <button
+            onClick={handleCancel}
+            className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+          >
+            Cancelar Pedido
+          </button>
+        )}
+
+        {order.status === "Cancelado" && (
+          <p className="mt-4 text-red-600 font-semibold">
+            Este pedido foi cancelado.
+          </p>
+        )}
         <div className="mt-6 text-center">
           <p className="text-lg text-gray-600 mb-4">
             Obrigado pela sua compra, {user?.name || "Cliente"}!
