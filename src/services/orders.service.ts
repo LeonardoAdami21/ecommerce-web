@@ -69,8 +69,8 @@ export const updateOrderStatus = async (
   if (!token) {
     throw new Error("Token not found");
   }
-  const response = await axiosInstance.put(
-    `/orders/${id}`,
+  const response = await axiosInstance.patch(
+    `/orders/${id}/status`,
     {
       status: status,
     },
