@@ -11,9 +11,7 @@ const PrivateRoute = ({ allowedRoles, children }: PrivateRouteProps) => {
   const { user, loading } = useContext(AuthContext);
 
   // Para debugging
-  useEffect(() => {
-    console.log("Auth state:", { user, loading });
-  }, [user, loading]);
+  useEffect(() => {}, [user, loading]);
 
   // Se ainda está carregando, mostra o loading
   if (loading) {
@@ -28,8 +26,11 @@ const PrivateRoute = ({ allowedRoles, children }: PrivateRouteProps) => {
 
   // Verifica se o usuário tem as roles necessárias
   const hasAccess = allowedRoles.some((role) => user.roles.includes(role));
+  const hasAdminRole = hasAccess && user.roles.includes("admin");
+  const hasUserRole = hasAccess && user.roles.includes("user");
+  const hasUserOrAdminRole = hasAdminRole || hasUserRole;
   // Você pode usar essa verificação manual em vez da função hasRole
-  if (!hasAccess) {
+  if (!hasUserOrAdminRole) {
     console.log("Acesso negado (verificação manual)");
     return <Navigate to="/access-denied" />;
   }

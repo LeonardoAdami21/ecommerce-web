@@ -108,7 +108,7 @@ const OrdersList = () => {
           Você precisa estar logado para ver seus pedidos
         </h2>
         <div className="mt-4">
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/auth/login" className="text-blue-600 hover:underline">
             Fazer login
           </Link>
         </div>
