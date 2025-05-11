@@ -48,7 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             email: userData.email,
             name: userData.name || "Usuário",
             id: userData.id,
-            roles: userData.roles || [],
+            roles: Array.isArray(userData.roles)
+              ? userData.roles
+              : [userData.role || "user"], // <- garante array
           });
           setIsAuthenticated(true);
         } else {
@@ -101,8 +103,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser({
             email: userData.email,
             name: userData.name || "Usuário",
-            id: userData.id,
-            roles: userData.roles || [],
+            roles: Array.isArray(userData.roles)
+              ? userData.roles
+              : [userData.role || "user"], // <- garante array
           });
           setIsAuthenticated(true);
         } else {

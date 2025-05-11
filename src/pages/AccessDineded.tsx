@@ -27,7 +27,7 @@ const AccessDenied = () => {
         </p>
         <div className="mt-6">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/cart')}
             className="px-4 py-2 mr-2 text-white bg-blue-500 rounded hover:bg-blue-600"
           >
             Voltar

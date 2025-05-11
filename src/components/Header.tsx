@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { ShoppingCart } from "lucide-react";
 
 const Header: React.FC = () => {
   const { user, logout, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Função para depurar o estado de autenticação - remova em produção
   useEffect(() => {}, [isAuthenticated, user, loading]);
 
   return (
@@ -26,12 +26,25 @@ const Header: React.FC = () => {
             <div className="text-white animate-pulse">Carregando...</div>
           ) : isAuthenticated && user ? (
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate("/cart")}
+                className="relative text-white hover:text-gray-200"
+                title="Ir para o carrinho"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {/* Badge opcional com quantidade (ex: 3) */}
+                {/* <span className="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  3
+                </span> */}
+              </button>
+
               <span
                 data-testid="user-greeting"
                 className="text-white bg-blue-700 px-3 py-1 rounded"
               >
                 Olá, {user.name}
               </span>
+
               <button
                 onClick={logout}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition duration-200"
