@@ -49,7 +49,11 @@ export async function getCurrentUser() {
   }
 
   try {
-    const response = await axiosInstance.get("/users/me");
+    const response = await axiosInstance.get("/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.data) {
       throw new Error("Dados do usuário não recebidos");

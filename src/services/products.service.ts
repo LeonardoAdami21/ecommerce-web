@@ -80,7 +80,7 @@ export const mockProductApi = {
       description: "Smartphone Apple com processador A15 Bionic",
       price: 4999.99,
       image: "https://placehold.co/600x400?text=iPhone+13",
-      stockQuantity: 15,
+      quantity_stock: 15,
     },
     {
       id: 2,
@@ -89,7 +89,7 @@ export const mockProductApi = {
       description: "Notebook com chip M2 e 8GB de RAM",
       price: 8999.99,
       image: "https://placehold.co/600x400?text=MacBook+Air",
-      stockQuantity: 8,
+      quantity_stock: 8,
     },
     {
       id: 3,
@@ -98,7 +98,7 @@ export const mockProductApi = {
       description: "Monitor 34 polegadas com resolução 4K",
       price: 2799.99,
       image: "https://placehold.co/600x400?text=Monitor+LG",
-      stockQuantity: 12,
+      quantity_stock: 12,
     },
     {
       id: 4,
@@ -107,7 +107,7 @@ export const mockProductApi = {
       description: "Teclado mecânico RGB com switches Cherry MX",
       price: 499.99,
       image: "https://placehold.co/600x400?text=Teclado+Logitech",
-      stockQuantity: 20,
+      quantity_stock: 20,
     },
     {
       id: 5,
@@ -116,7 +116,7 @@ export const mockProductApi = {
       description: "Mouse com 8000 DPI e 8 botões programáveis",
       price: 299.99,
       image: "https://placehold.co/600x400?text=Mouse+Razer",
-      stockQuantity: 25,
+      quantity_stock: 25,
     },
     {
       id: 6,
@@ -125,7 +125,7 @@ export const mockProductApi = {
       description: "Smart TV 4K com Tizen OS",
       price: 3499.99,
       image: "https://placehold.co/600x400?text=TV+Samsung",
-      stockQuantity: 10,
+      quantity_stock: 10,
     },
     {
       id: 7,
@@ -134,7 +134,7 @@ export const mockProductApi = {
       description: "Headphone com cancelamento de ruído",
       price: 1999.99,
       image: "https://placehold.co/600x400?text=Headphone+Sony",
-      stockQuantity: 18,
+      quantity_stock: 18,
     },
     {
       id: 8,
@@ -143,7 +143,7 @@ export const mockProductApi = {
       description: "Console de última geração da Sony",
       price: 4499.99,
       image: "https://placehold.co/600x400?text=PlayStation+5",
-      stockQuantity: 5,
+      quantity_stock: 5,
     },
   ] as Product[],
 
@@ -164,7 +164,7 @@ export const mockProductApi = {
     const newProduct = {
       ...product,
       id: newId,
-      stockQuantity: 10, // Valor padrão para mock
+      quantity_stock: 10, // Valor padrão para mock
     };
     this.products.push(newProduct);
     return Promise.resolve({ ...newProduct });

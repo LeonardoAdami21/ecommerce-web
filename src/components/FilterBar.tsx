@@ -3,10 +3,9 @@ import { useState, useEffect } from "react";
 import { useProductStore } from "../store/productStore";
 
 const FilterBar = () => {
-  const { products } = useProductStore();
-  const { filters, updateFilter } = useProductStore();
+  const { products, filters, updateFilter } = useProductStore();
   const [localFilter, setLocalFilter] = useState({
-    searchTerm: filters.searchTerm,
+    searchTerm: filters.searchTerm || "",
     minPrice: filters.minPrice === null ? "" : filters.minPrice,
     maxPrice: filters.maxPrice === null ? "" : filters.maxPrice,
   });
@@ -14,8 +13,18 @@ const FilterBar = () => {
   // Para encontrar o preço máximo no conjunto de produtos
   const [maxPriceInProducts, setMaxPriceInProducts] = useState<number>(0);
 
+  // Sincronizar o estado local com as mudanças no estado global
   useEffect(() => {
-    if (products.length > 0) {
+    setLocalFilter({
+      searchTerm: filters.searchTerm || "",
+      minPrice: filters.minPrice === null ? "" : filters.minPrice,
+      maxPrice: filters.maxPrice === null ? "" : filters.maxPrice,
+    });
+  }, [filters]);
+
+  // Calcular o preço máximo dos produtos
+  useEffect(() => {
+    if (products && products.length > 0) {
       const highestPrice = Math.max(
         ...products.map((product) => product.price),
       );
@@ -38,9 +47,11 @@ const FilterBar = () => {
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
+    const numValue = value === "" ? "" : Number(value);
+
     setLocalFilter((prev) => ({
       ...prev,
-      [name]: value === "" ? "" : Number(value),
+      [name]: numValue,
     }));
   };
 
@@ -53,30 +64,19 @@ const FilterBar = () => {
     });
   };
 
+  // Aplicar filtro de preço quando pressionar Enter em um dos campos
+  const handlePriceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handlePriceFilter();
+    }
+  };
+
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    let sortBy: "name" | "price" | "category" = "name";
-    let sortOrder: "asc" | "desc" = "asc";
-
-    if (value === "name-asc") {
-      sortBy = "name";
-      sortOrder = "asc";
-    } else if (value === "name-desc") {
-      sortBy = "name";
-      sortOrder = "desc";
-    } else if (value === "price-asc") {
-      sortBy = "price";
-      sortOrder = "asc";
-    } else if (value === "price-desc") {
-      sortBy = "price";
-      sortOrder = "desc";
-    } else if (value === "category-asc") {
-      sortBy = "category";
-      sortOrder = "asc";
-    } else if (value === "category-desc") {
-      sortBy = "category";
-      sortOrder = "desc";
-    }
+    let [sortBy, sortOrder] = value.split("-") as [
+      "name" | "price" | "category",
+      "asc" | "desc",
+    ];
 
     updateFilter({ sortBy, sortOrder });
   };
@@ -86,8 +86,25 @@ const FilterBar = () => {
     return `${sortBy}-${sortOrder}`;
   };
 
+  // Função para limpar todos os filtros
+  const clearAllFilters = () => {
+    setLocalFilter({
+      searchTerm: "",
+      minPrice: "",
+      maxPrice: "",
+    });
+
+    updateFilter({
+      searchTerm: "",
+      minPrice: null,
+      maxPrice: null,
+      sortBy: "name",
+      sortOrder: "asc",
+    });
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
+    <div className="bg-white p-4 rounded-lg shadow-md mb-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Busca por texto */}
         <div>
@@ -119,6 +136,7 @@ const FilterBar = () => {
               placeholder="Min"
               value={localFilter.minPrice}
               onChange={handlePriceChange}
+              onKeyDown={handlePriceKeyDown}
               min={0}
               max={maxPriceInProducts}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -130,6 +148,7 @@ const FilterBar = () => {
               placeholder="Max"
               value={localFilter.maxPrice}
               onChange={handlePriceChange}
+              onKeyDown={handlePriceKeyDown}
               min={0}
               max={maxPriceInProducts}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -165,6 +184,16 @@ const FilterBar = () => {
             <option value="category-desc">Categoria (Z-A)</option>
           </select>
         </div>
+      </div>
+
+      {/* Botão para limpar filtros */}
+      <div className="mt-3 flex justify-end">
+        <button
+          onClick={clearAllFilters}
+          className="text-sm text-gray-600 hover:text-gray-800 underline"
+        >
+          Limpar filtros
+        </button>
       </div>
     </div>
   );
