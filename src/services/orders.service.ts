@@ -4,7 +4,7 @@ import type { Orders } from "../interface";
 export interface CreateOrderData {
   status: string;
   totalAmount: number;
-  items: {
+  products: {
     productId: number;
     quantity: number;
   }[];
@@ -18,11 +18,15 @@ export const getOrders = async (
   try {
     const params: Record<string, string | number> = { page, limit };
     if (status) params.status = status;
-    const token = localStorage.getItem("token");
-    if (token) params.token = token;
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      throw new Error("Token not found");
+    }
     const response = await axiosInstance.get("/orders", {
       params,
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -31,17 +35,21 @@ export const getOrders = async (
   }
 };
 
-export const getOrderById = async (id: number): Promise<Orders> => {
-  const token = localStorage.getItem("token");
+export const getOrderById = async (orderId: number) => {
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
-  const response = await axiosInstance.get(`/orders/${id}`);
+  const response = await axiosInstance.get(`/orders/${orderId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
 
 export const createOrder = async (order: CreateOrderData): Promise<Orders> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
@@ -57,7 +65,7 @@ export const updateOrderStatus = async (
   id: number,
   status: string,
 ): Promise<Orders> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
@@ -76,7 +84,7 @@ export const updateOrderStatus = async (
 };
 
 export const deleteOrder = async (id: number): Promise<void> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
