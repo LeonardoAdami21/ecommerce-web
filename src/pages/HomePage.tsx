@@ -11,6 +11,7 @@ const Home = () => {
 
   // Busca produtos ao carregar o componente
   useEffect(() => {
+    console.log(user);
     fetchProducts();
   }, [fetchProducts]);
 
@@ -34,10 +35,16 @@ const Home = () => {
       {user?.userRole?.includes("admin") && (
         <div className="container mx-auto px-4 flex justify-end mb-6">
           <Link
-            to="/products"
+            to="/products/admin/add-product"
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200"
           >
             Adicionar Produto
+          </Link>
+          <Link
+            to="/dashboard"
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-200"
+          >
+            Accessar Dashboard
           </Link>
         </div>
       )}

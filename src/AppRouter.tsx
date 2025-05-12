@@ -3,7 +3,6 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
-import OrdersList from "./components/OrderList";
 import ProductList from "./components/ProductList";
 import PrivateRoute from "./context/PrivateRouter";
 import AccessDenied from "./pages/AccessDineded";
@@ -14,6 +13,9 @@ import OrderConfirmationPage from "./pages/OrderConfimationPage";
 import PageNotFound from "./pages/PageNotFound";
 import Register from "./pages/RegisterPage";
 import Cart from "./components/Cart";
+import AdminAddProduct from "./pages/AdminAddProduct";
+import AdminDashboard from "./components/Dashboard";
+import EditProduct from "./components/EditProduct";
 
 const AppRouter: React.FC = () => {
   return (
@@ -24,7 +26,7 @@ const AppRouter: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
-          <Route path="/products" element={<ProductList />} />
+          <Route path="/products/:id" element={<ProductList />} />
           <Route path="/cart" element={<Cart />} />
           <Route
             path="/orders"
@@ -40,6 +42,30 @@ const AppRouter: React.FC = () => {
               <PrivateRoute allowedRoles={["user"]}>
                 {" "}
                 <OrderConfirmationPage />{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/products/admin/add-product"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminAddProduct />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/products/admin/edit/:id"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <EditProduct />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute allowedRoles={["admin"]}>
+                <AdminDashboard />
               </PrivateRoute>
             }
           />
