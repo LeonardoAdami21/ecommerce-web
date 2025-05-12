@@ -1,77 +1,66 @@
-import { useEffect } from "react";
 import { useProductStore } from "../store/productStore";
-import LoadingSpinner from "./LoadingSpinner";
 import ProductCard from "./ProductCard";
-import FilterBar from "./FilterBar";
 import Pagination from "./Pagination";
 
 const ProductList = () => {
-  const {
-    products = [],
-    isLoading,
-    error,
-    fetchProducts,
-    currentPage,
-    totalPages,
-    setPage,
-  } = useProductStore();
-
-  useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
+  const { products, isLoading, error, currentPage, totalPages, setPage } =
+    useProductStore();
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>{error}</p>
-          <button
-            onClick={() => fetchProducts(currentPage)}
-            className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
-          >
-            Tentar novamente
-          </button>
+      <div className="container mx-auto px-4 py-8">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <strong className="font-bold">Erro! </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+            Nenhum produto encontrado
+          </h2>
+          <p className="text-gray-500">Tente ajustar os filtros de busca.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <FilterBar />
+    <div className="container mx-auto px-4">
+      {/* Grade de produtos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
 
-      {products.length === 0 ? (
-        <div className="text-center py-10">
-          <h3 className="text-xl font-semibold text-gray-600">
-            Nenhum produto encontrado
-          </h3>
-          <p className="text-gray-500 mt-2">
-            Tente ajustar os filtros de busca
-          </p>
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="mt-12">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </div>
-      ) : (
-        <>
-          <div
-            data-testid="product-grid"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 mb-6 w-full"
-          >
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        </>
       )}
     </div>
   );

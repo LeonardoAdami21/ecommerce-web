@@ -46,9 +46,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (userData && userData.email) {
           setUser({
             email: userData.email,
-            name: userData.name || "Usuário",
+            name: userData.name,
             id: userData.id,
-            roles: Array.isArray(userData.roles)
+            userRole: Array.isArray(userData.roles)
               ? userData.roles
               : [userData.role || "user"], // <- garante array
           });
@@ -102,10 +102,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (userData && userData.email) {
           setUser({
             email: userData.email,
-            name: userData.name || "Usuário",
-            roles: Array.isArray(userData.roles)
-              ? userData.roles
-              : [userData.role || "user"], // <- garante array
+            name: userData.name,
+            userRole: userData.userRole,
           });
           setIsAuthenticated(true);
         } else {
@@ -137,11 +135,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const hasRole = (role: string | string[]): boolean => {
-    if (!user || !user.roles || !isAuthenticated) {
+    if (!user || !user.userRole || !isAuthenticated) {
       return false;
     }
 
-    const userRoles = Array.isArray(user.roles) ? user.roles : [];
+    const userRoles = Array.isArray(user.userRole) ? user.userRole : [];
 
     if (Array.isArray(role)) {
       return role.some((r) => userRoles.includes(r));

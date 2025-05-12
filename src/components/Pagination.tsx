@@ -1,4 +1,3 @@
-// src/components/Pagination.tsx
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -10,119 +9,105 @@ const Pagination = ({
   totalPages,
   onPageChange,
 }: PaginationProps) => {
-  // Se não houver páginas ou apenas uma página, não mostrar a paginação
-  if (totalPages <= 1) {
-    return null;
-  }
+  // Número máximo de botões de página para mostrar
+  const maxPageButtons = 5;
 
-  // Criar um array com os números das páginas que serão exibidos
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-
-    // Sempre mostrar a primeira página
-    pageNumbers.push(1);
-
-    // Calcular quais páginas mostrar ao redor da página atual
-    const rangeStart = Math.max(2, currentPage - 1);
-    const rangeEnd = Math.min(totalPages - 1, currentPage + 1);
-
-    // Adicionar elipses se necessário
-    if (rangeStart > 2) {
-      pageNumbers.push("...");
+  // Gera um array de números de página para renderizar
+  const getPageNumbers = (): number[] => {
+    if (totalPages <= maxPageButtons) {
+      // Se houver menos páginas que o máximo de botões, mostra todas
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    // Adicionar páginas do intervalo
-    for (let i = rangeStart; i <= rangeEnd; i++) {
-      pageNumbers.push(i);
+    // Caso contrário, mostra um número fixo de botões com a página atual no centro (quando possível)
+    const halfMaxButtons = Math.floor(maxPageButtons / 2);
+    let startPage = Math.max(1, currentPage - halfMaxButtons);
+    const endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+    // Ajusta a página inicial se não conseguirmos mostrar maxPageButtons
+    if (endPage - startPage + 1 < maxPageButtons) {
+      startPage = Math.max(1, endPage - maxPageButtons + 1);
     }
 
-    // Adicionar elipses se necessário
-    if (rangeEnd < totalPages - 1) {
-      pageNumbers.push("...");
-    }
-
-    // Sempre mostrar a última página se houver mais de uma página
-    if (totalPages > 1) {
-      pageNumbers.push(totalPages);
-    }
-
-    return pageNumbers;
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, i) => startPage + i,
+    );
   };
 
-  const pageNumbers = getPageNumbers();
-
   return (
-    <nav aria-label="Paginação" className="flex justify-center">
-      <ul className="inline-flex items-center -space-x-px">
-        {/* Botão Anterior */}
-        <li>
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`block px-3 py-2 ml-0 leading-tight bg-white border border-gray-300 rounded-l-lg ${
-              currentPage === 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            }`}
-          >
-            <span className="sr-only">Anterior</span>
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </li>
+    <div className="flex justify-center items-center space-x-2">
+      {/* Botão "Anterior" */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 rounded ${
+          currentPage === 1
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+        }`}
+      >
+        Anterior
+      </button>
 
-        {/* Números de Página */}
-        {pageNumbers.map((pageNumber, index) => (
-          <li key={index}>
-            {pageNumber === "..." ? (
-              <span className="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300">
-                ...
-              </span>
-            ) : (
-              <button
-                onClick={() =>
-                  typeof pageNumber === "number" && onPageChange(pageNumber)
-                }
-                className={`px-3 py-2 leading-tight border border-gray-300 ${
-                  currentPage === pageNumber
-                    ? "text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700"
-                    : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
-                }`}
-              >
-                {pageNumber}
-              </button>
-            )}
-          </li>
-        ))}
-
-        {/* Botão Próximo */}
-        <li>
+      {/* Botão primeira página (se não estiver visível) */}
+      {getPageNumbers()[0] > 1 && (
+        <>
           <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`block px-3 py-2 leading-tight bg-white border border-gray-300 rounded-r-lg ${
-              currentPage === totalPages
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            }`}
+            onClick={() => onPageChange(1)}
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
           >
-            <span className="sr-only">Próximo</span>
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+            1
           </button>
-        </li>
-      </ul>
-    </nav>
+          {getPageNumbers()[0] > 2 && (
+            <span className="px-2 py-1 text-gray-500">...</span>
+          )}
+        </>
+      )}
+
+      {/* Números das páginas */}
+      {getPageNumbers().map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={`px-3 py-1 rounded ${
+            currentPage === page
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+
+      {/* Botão última página (se não estiver visível) */}
+      {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+        <>
+          {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+            <span className="px-2 py-1 text-gray-500">...</span>
+          )}
+          <button
+            onClick={() => onPageChange(totalPages)}
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+          >
+            {totalPages}
+          </button>
+        </>
+      )}
+
+      {/* Botão "Próximo" */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 rounded ${
+          currentPage === totalPages
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+        }`}
+      >
+        Próximo
+      </button>
+    </div>
   );
 };
 

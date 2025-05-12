@@ -149,7 +149,7 @@ const OrderDetails = () => {
     return <div className="text-center py-8">Pedido não encontrado.</div>;
   }
 
-  const isAdmin = user?.roles.includes("admin");
+  const isAdmin = user?.userRole.includes("admin");
   const canUpdateStatus =
     isAdmin && order.status !== "cancelled" && order.status !== "delivered";
   const canCancel =
