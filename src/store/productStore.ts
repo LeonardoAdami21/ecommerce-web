@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Product, ProductFormData } from "../interface";
 import axiosInstance from "../api/api";
+import { createProduct } from "../services/products.service";
 
 interface ProductState {
   products: Product[];
@@ -46,12 +47,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
     sortOrder: "asc",
   },
 
-  addProduct: async (product) => {
+  addProduct: async (product: ProductFormData) => {
     try {
-      await axiosInstance.post("/products", {
-        ...product,
-      });
+      const response = await axiosInstance.post("/products/admin/add-product", product);
+      console.log(response);
       get().fetchProducts();
+      return response.data;
     } catch (error) {
       console.error("Error adding product:", error);
     }

@@ -7,7 +7,7 @@ export const getProducts = async (): Promise<Product[]> => {
 };
 
 export const getProductById = async (id: number): Promise<Product> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
@@ -25,7 +25,7 @@ export const getProductById = async (id: number): Promise<Product> => {
 export const createProduct = async (
   product: ProductFormData,
 ): Promise<Product> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
@@ -41,14 +41,14 @@ export const updateProduct = async (
   id: number,
   product: ProductFormData,
 ): Promise<Product> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
   if (!id) {
     throw new Error("ID not found");
   }
-  const response = await axiosInstance.put(`/products/${id}`, product, {
+  const response = await axiosInstance.patch(`/products/admin/edit/${id}`, product, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -57,18 +57,19 @@ export const updateProduct = async (
 };
 
 export const deleteProduct = async (id: number): Promise<void> => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("Token not found");
   }
   if (!id) {
     throw new Error("ID not found");
   }
-  await axiosInstance.delete(`/products/${id}`, {
+  const response = await axiosInstance.delete(`/products/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
 export const mockProductApi = {
