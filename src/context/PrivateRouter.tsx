@@ -25,9 +25,9 @@ const PrivateRoute = ({ allowedRoles, children }: PrivateRouteProps) => {
   }
 
   // Verifica se o usuário tem as roles necessárias
-  const hasAccess = allowedRoles.some((role) => user.roles.includes(role));
-  const hasAdminRole = hasAccess && user.roles.includes("admin");
-  const hasUserRole = hasAccess && user.roles.includes("user");
+  const hasAccess = allowedRoles.some((role) => user.userRole.includes(role));
+  const hasAdminRole = hasAccess && user.userRole.includes("admin");
+  const hasUserRole = hasAccess && user.userRole.includes("user");
   const hasUserOrAdminRole = hasAdminRole || hasUserRole;
   // Você pode usar essa verificação manual em vez da função hasRole
   if (!hasUserOrAdminRole) {

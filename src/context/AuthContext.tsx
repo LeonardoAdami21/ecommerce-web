@@ -48,9 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             email: userData.email,
             name: userData.name,
             id: userData.id,
-            userRole: Array.isArray(userData.roles)
-              ? userData.roles
-              : [userData.role || "user"], // <- garante array
+            userRole: userData.userRole || [],
           });
           setIsAuthenticated(true);
         } else {
