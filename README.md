@@ -7,6 +7,44 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
+  ## Antes de tudo:
+  - Ter a versão LTS do Node.js instalada
+  - usar npm ou yarn para instalar as dependências
+  - Crie o arquivo .env
+
+🚀 Tecnologias Utilizadas
+* React: Biblioteca para construção de interfaces de usuário
+* TypeScript: Superset de JavaScript com tipagem estática
+* Vite: Build tool e servidor de desenvolvimento
+* Tailwind CSS: Framework CSS para estilização
+* Zustand: Gerenciamento de estado
+* Axios: Cliente HTTP para consumo de APIs
+* React Router DOM: Roteamento de páginas
+
+  
+📋 Funcionalidades
+* Listagem de produtos com informações completas
+* Formulário para cadastro de novos produtos
+* Filtragem por nome e faixa de preço
+* Ordenação por diferentes critérios
+* Paginação para a lista de produtos
+* Layout responsivo para diferentes dispositivos
+* Formulario para castastro de novo usuários(Clientes)
+* Login com as credencias de email e senha
+* Compra de um ou varios produtos
+* Dashoard(Admin) sendo que apenas o usuário com acesso de administrador pode acessar-lo.
+  
+🛠️ Estrutura do Projeto
+src/
+├── api/              # Para funções de chamada à API
+├── components/       # Componentes reutilizáveis
+├── pages/            # Páginas/Rotas da aplicação
+├── store/            # Gerenciamento de estado (Zustand)
+|-- interfaces/       # Tipagem
+├── App.tsx           # Componente principal
+├── main.tsx          # Ponto de entrada
+.env                  # Variaveis do ambiente 
+
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
