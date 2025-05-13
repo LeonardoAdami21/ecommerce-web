@@ -16,22 +16,34 @@ export const getOrders = async (
   status?: Orders["status"],
 ): Promise<{ orders: Orders[]; total: number; pages: number }> => {
   try {
-    const params: Record<string, string | number> = { page, limit };
+    const params: Record<string, string | number> = {
+      skip: (page - 1) * limit,
+      take: limit,
+    };
     if (status) params.status = status;
+
     const token = localStorage.getItem("access_token");
     if (!token) {
       throw new Error("Token not found");
     }
+
     const response = await axiosInstance.get("/orders", {
       params,
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+
+    const { data, meta } = response.data;
+
+    return {
+      orders: data,
+      total: meta.total,
+      pages: Math.ceil(meta.total / meta.pageSize),
+    };
   } catch (error) {
     console.error("Erro ao buscar pedidos:", error);
-    throw error;
+    throw new Error("Erro ao buscar pedidos");
   }
 };
 

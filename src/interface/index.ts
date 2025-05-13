@@ -12,11 +12,12 @@ export interface Orders {
   id: number;
   userId?: number;
   status: string;
+  price?: number;
   customerName: string;
-  totalAmount: number;
-  created_at: Date;
+  total_amount: number;
+  createdAt: Date;
   updated_at: Date;
-  items: OrderItem[];
+  products: OrderItem[];
 }
 
 export interface OrderItem {
